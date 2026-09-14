@@ -1,18 +1,37 @@
 ---
-import { clampRating, formatStarRating } from '../lib/ratings';
+import { clampRating, getStarStates } from '../lib/ratings';
 
 interface Props {
     rating: number | null;
 }
 
 const { rating } = Astro.props;
+const clampedRating = rating === null ? null : clampRating(rating);
+const starStates = clampedRating === null ? [] : getStarStates(clampedRating);
 ---
 
-{rating !== null && (
+{clampedRating !== null && (
     <div class="flex items-center">
-        <span class="bg-blue-500/20 text-blue-400 text-sm px-3 py-1 rounded-full" data-testid="game-rating">
-            <span class="text-yellow-400">{formatStarRating(rating)}</span>
-            {clampRating(rating).toFixed(1)}
+        <span
+            class="bg-blue-500/20 text-blue-400 text-sm px-3 py-1 rounded-full"
+            data-testid="game-rating"
+        >
+            <span class="sr-only">{clampedRating.toFixed(1)} out of 5 stars</span>
+            <span class="inline-flex mr-1" aria-hidden="true">
+                {starStates.map((state) => (
+                    state === 'full' ? (
+                        <span class="text-yellow-400">★</span>
+                    ) : state === 'half' ? (
+                        <span class="relative inline-block w-[1em] text-slate-500">
+                            <span>★</span>
+                            <span class="absolute inset-0 w-1/2 overflow-hidden text-yellow-400">★</span>
+                        </span>
+                    ) : (
+                        <span class="text-slate-500">☆</span>
+                    )
+                ))}
+            </span>
+            <span aria-hidden="true">{clampedRating.toFixed(1)}</span>
         </span>
     </div>
 )}
